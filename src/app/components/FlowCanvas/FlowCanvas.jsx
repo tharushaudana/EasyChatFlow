@@ -10,14 +10,16 @@ import {
     useEdgesState,
     addEdge,
     MarkerType,
-    Handle,
-    Position,
     ReactFlowProvider,
     useReactFlow,
     useStoreApi,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { v4 as uuidv4 } from "uuid";
+
+import ImageNode from "./nodes/ImageNode";
+import TextNode from "./nodes/TextNode";
+import GenerativeNode from "./nodes/GenerativeNode";
 
 const initialNodes = [
     {
@@ -79,37 +81,10 @@ const withDeleteButton = (Component) => (props) => {
     );
 };
 
-const ImageCardNode = withDeleteButton(({ data }) => (
-    <div className="p-2 rounded-xl bg-blue-100 shadow-md w-48 text-center">
-        <Handle type="target" position={Position.Left} isConnectable />
-        <p className="font-bold mb-2">{data.label}</p>
-        <img src={data.imageUrl} alt="Component" className="rounded" />
-        <Handle type="source" position={Position.Right} isConnectable />
-    </div>
-));
-
-const TextCardNode = withDeleteButton(({ data }) => (
-    <div className="p-3 rounded-xl bg-yellow-100 shadow-md w-60 text-left">
-        <Handle type="target" position={Position.Left} isConnectable />
-        <p className="font-bold mb-2">{data.label}</p>
-        <p className="text-sm whitespace-pre-wrap">{data.text}</p>
-        <Handle type="source" position={Position.Right} isConnectable />
-    </div>
-));
-
-const GenerativeCardNode = withDeleteButton(({ data }) => (
-    <div className="p-3 rounded-xl bg-green-100 shadow-md w-64 text-left">
-        <Handle type="target" position={Position.Left} isConnectable />
-        <p className="font-bold mb-2">{data.label}</p>
-        <pre className="text-xs bg-white p-2 rounded overflow-auto">{data.code}</pre>
-        <Handle type="source" position={Position.Right} isConnectable />
-    </div>
-));
-
 const nodeTypes = {
-    imageCard: ImageCardNode,
-    textCard: TextCardNode,
-    generativeCard: GenerativeCardNode,
+    imageCard: withDeleteButton(ImageNode),
+    textCard: withDeleteButton(TextNode),
+    generativeCard: withDeleteButton(GenerativeNode),
 };
 
 function FlowCanvasInner() {

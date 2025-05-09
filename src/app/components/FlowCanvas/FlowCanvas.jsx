@@ -29,6 +29,18 @@ const initialNodes = [
         data: { label: "Image Card", imageUrl: "https://via.placeholder.com/150" },
     },
     {
+        id: "12",
+        type: "imageCard",
+        position: { x: 0, y: 100 },
+        data: { label: "Image Card", imageUrl: "https://via.placeholder.com/150" },
+    },
+    {
+        id: "13",
+        type: "imageCard",
+        position: { x: 0, y: 150 },
+        data: { label: "Image Card", imageUrl: "https://via.placeholder.com/150" },
+    },
+    {
         id: "2",
         type: "textCard",
         position: { x: 300, y: 50 },
@@ -46,6 +58,26 @@ const initialEdges = [
     {
         id: "e1-2",
         source: "1",
+        target: "2",
+        animated: true,
+        type: "default",
+        markerEnd: {
+            type: MarkerType.ArrowClosed,
+        },
+    },
+    {
+        id: "e12-2",
+        source: "12",
+        target: "2",
+        animated: true,
+        type: "default",
+        markerEnd: {
+            type: MarkerType.ArrowClosed,
+        },
+    },
+    {
+        id: "e13-2",
+        source: "13",
         target: "2",
         animated: true,
         type: "default",
@@ -169,6 +201,17 @@ function FlowCanvasInner() {
         };
     }, [nodes]);
 
+    // Style edges based on selection
+    const styledEdges = useMemo(() => {
+        return edges.map((edge) => ({
+            ...edge,
+            style: {
+                stroke: edge.selected ? "blue" : "#999",
+                strokeWidth: edge.selected ? 2 : 1,
+            },
+        }));
+    }, [edges]);
+
     return (
         <div className="w-full h-screen relative">
             {/* Top Summary Panel */}
@@ -200,7 +243,7 @@ function FlowCanvasInner() {
             </div>
             <ReactFlow
                 nodes={nodes}
-                edges={edges}
+                edges={styledEdges}
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={onConnect}

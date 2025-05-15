@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ReactFlow,
     MiniMap,
@@ -97,12 +97,51 @@ const initialEdges = [
     },
 ];
 
-const withDeleteButton = (Component) => (props) => {
-    const { id } = props;
-    const { setNodes } = useReactFlow();
+const getBackTrace = (node, store) => {
+    const backTrace = [];
+
+    const traverse = (currentNode) => {
+        if (!currentNode) return;
+        backTrace.push(currentNode);
+        const incomingEdges = store.getState().edges.filter((edge) => edge.target === currentNode.id);
+        incomingEdges.forEach((edge) => {
+            const sourceNode = store.getState().nodes.find((node) => node.id === edge.source);
+
+            // if (incomingEdges)
+            traverse(sourceNode);
+        });
+        
+        // stop if incoming edges are more than 1
+
+        // if (incomingEdges.length > 1) {
+        //     backTrace.push(currentNode);
+        //     return;
+        // }
+        
+    };
+
+    traverse(node);
+    return backTrace.reverse();
+}
+
+
+const withDeleteButton = (Component, store, setAffectedEdges) => (props) => {
+    const { id, type } = props;
+    const { setNodes, getNode } = useReactFlow();
+
+    const data = {...props.data};
+
+    if (type === "generativeCard") {
+        data.onGenerate = async () => {
+            const node = getNode(id);
+            const backTrace = getBackTrace(node, store);
+            console.log(backTrace);
+        };
+    }
+    
     return (
         <div className="relative">
-            <Component {...props} />
+            <Component data={data} />
             <button
                 onClick={() => setNodes((nds) => nds.filter((node) => node.id !== id))}
                 className="absolute top-0 right-0 text-xs text-white bg-red-500 rounded-full px-1"
@@ -113,16 +152,24 @@ const withDeleteButton = (Component) => (props) => {
     );
 };
 
-const nodeTypes = {
-    imageCard: withDeleteButton(ImageNode),
-    textCard: withDeleteButton(TextNode),
-    generativeCard: withDeleteButton(GenerativeNode),
-};
+// const nodeTypes = {
+//     imageCard: withDeleteButton(ImageNode),
+//     textCard: withDeleteButton(TextNode),
+//     generativeCard: withDeleteButton(GenerativeNode),
+// };
 
 function FlowCanvasInner() {
     const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
     const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
     const store = useStoreApi();
+
+    const [affectedEdges, setAffectedEdges] = useState([]);
+
+    const nodeTypes = useMemo(() => ({
+        imageCard: withDeleteButton(ImageNode, store, setAffectedEdges),
+        textCard: withDeleteButton(TextNode, store, setAffectedEdges),
+        generativeCard: withDeleteButton(GenerativeNode, store, setAffectedEdges),
+    }), [store, setAffectedEdges]);
 
     const onConnect = (params) =>
         setEdges((eds) =>
